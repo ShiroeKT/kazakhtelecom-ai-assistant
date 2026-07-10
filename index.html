@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ассистент - Казахтелеком</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .logo-text h1 {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo-text p {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+        }
+
+        .reset-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.assistant .avatar {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+        }
+
+        .message.user .avatar {
+            background: #e2e8f0;
+        }
+
+        .bubble {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+
+        .message.assistant .bubble {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bubble strong {
+            font-weight: 600;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .category-btn {
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .category-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .option-btn {
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-btn:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .option-number {
+            width: 35px;
+            height: 35px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .diagnosis-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 15px;
+        }
+
+        .diagnosis-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .diagnosis-section {
+            margin-bottom: 20px;
+        }
+
+        .diagnosis-section h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .solution-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .solution-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px 20px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .bubble {
+                max-width: 85%;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+                <div class="logo-text">
+                    <h1>AI Ассистент</h1>
+                    <p>Техническая поддержка Казахтелеком</p>
+                </div>
+            </div>
+            <button class="reset-btn" onclick="resetChat()">🔄 Начать заново</button>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="empty-state">
+                <div class="icon">💬</div>
+                <p>Опишите вашу проблему и я помогу её решить</p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input type="text" class="input-field" id="userInput" placeholder="Опишите вашу проблему..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Отправить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Knowledge Base
+        const SYMPTOMS = [
+            { id: 'no_internet', keywords: ['нет интернета', 'не работает интернет', 'отсутствует связь'], category: 'internet' },
+            { id: 'slow_internet', keywords: ['медленный интернет', 'низкая скорость', 'тормозит'], category: 'internet' },
+            { id: 'wifi_not_working', keywords: ['вайфай не работает', 'wi-fi нет', 'не подключается'], category: 'internet' },
+            { id: 'no_tv_signal', keywords: ['нет сигнала', 'экран черный', 'нет изображения'], category: 'tv' },
+            { id: 'tv_pixelation', keywords: ['пикселизация', 'квадратики', 'плохое качество'], category: 'tv' },
+            { id: 'no_dial_tone', keywords: ['нет гудка', 'не звонит', 'молчит телефон'], category: 'telephony' },
+            { id: 'poor_audio_quality', keywords: ['плохо слышно', 'шумит', 'хрипит'], category: 'telephony' },
+            { id: 'no_mobile_signal', keywords: ['нет сети', 'нет связи', 'поиск сети'], category: 'mobile' },
+            { id: 'slow_mobile_data', keywords: ['медленный мобильный интернет', 'не грузит 4g'], category: 'mobile' },
+            { id: 'router_not_working', keywords: ['роутер не работает', 'не горит индикатор'], category: 'equipment' }
+        ];
+
+        const DIAGNOSTIC_TREES = {
+            internet: [
+                {
+                    id: 'internet_start',
+                    question: 'Какая именно проблема с интернетом вас беспокоит?',
+                    answers: [
+                        { text: 'Интернет полностью отсутствует', nextNodeId: 'internet_none_check' },
+                        { text: 'Интернет работает медленно', nextNodeId: 'internet_slow_check' },
+                        { text: 'Проблемы только с Wi-Fi', nextNodeId: 'internet_wifi_check' }
+                    ]
+                },
+                {
+                    id: 'internet_none_check',
+                    question: 'Проверьте, горит ли индикатор интернета на роутере?',
+                    answers: [
+                        { text: 'Индикатор горит', nextNodeId: 'internet_none_lights_on' },
+                        { text: 'Индикатор не горит', nextNodeId: 'internet_none_lights_off' }
+                    ]
+                },
+                {
+                    id: 'internet_none_lights_on',
+                    question: 'Попробуйте перезагрузить роутер - выключите его из розетки на 1 минуту. Помогло?',
+                    answers: [
+                        { text: 'Да, интернет появился', nextNodeId: 'internet_resolved' },
+                        { text: 'Нет, не помогло', nextNodeId: 'internet_check_cable' }
+                    ]
+                },
+                {
+                    id: 'internet_check_cable',
+                    question: 'Проверьте кабель от розетки к роутеру. Он плотно подключен?',
+                    answers: [
+                        { text: 'Кабель был плохо подключен', nextNodeId: 'internet_resolved' },
+                        { text: 'Кабель подключен нормально', nextNodeId: 'internet_line_issue' }
+                    ]
+                },
+                {
+                    id: 'internet_line_issue',
+                    question: 'Скорее всего проблема на линии. Проверьте уведомления об авариях в личном кабинете.',
+                    answers: [
+                        { text: 'Есть авария в районе', nextNodeId: 'internet_availability' },
+                        { text: 'Нет информации об аварии', nextNodeId: 'internet_technician' }
+                    ]
+                },
+                {
+                    id: 'internet_availability',
+                    question: 'Авария известна, технические службы работают. Ожидайте восстановления.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Авария на линии',
+                        description: 'Проводятся технические работы на линии',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте завершения работ' },
+                            { step: 2, description: 'Следите за уведомлениями в личном кабинете' }
+                        ]
+                    }
+                },
+                {
+                    id: 'internet_technician',
+                    question: 'Требуется выезд техники для диагностики линии.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема на линии',
+                        description: 'Требуется диагностика техническим специалистом',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте звонка техника' },
+                            { step: 2, description: 'Визит в течение 24-48 часов' }
+                        ]
+                    }
+                },
+                {
+                    id: 'internet_none_lights_off',
+                    question: 'Проверьте, подключен ли кабель от розетки к порту WAN на роутере?',
+                    answers: [
+                        { text: 'Кабель не был подключен', nextNodeId: 'internet_cable_fix' },
+                        { text: 'Кабель подключен', nextNodeId: 'internet_power_check' }
+                    ]
+                },
+                {
+                    id: 'internet_cable_fix',
+                    question: 'Подключите кабель и подождите 2-3 минуты. Индикатор загорелся?',
+                    answers: [
+                        { text: 'Да, работает', nextNodeId: 'internet_resolved' },
+                        { text: 'Нет', nextNodeId: 'internet_power_check' }
+                    ]
+                },
+                {
+                    id: 'internet_power_check',
+                    question: 'Проверьте питание роутера. Индикатор Power горит?',
+                    answers: [
+                        { text: 'Нет питания', nextNodeId: 'internet_power_fix' },
+                        { text: 'Питание есть', nextNodeId: 'internet_router_defect' }
+                    ]
+                },
+                {
+                    id: 'internet_power_fix',
+                    question: 'Проверьте розетку или автомат в щитке. Проблема решена?',
+                    answers: [
+                        { text: 'Да, решил проблему', nextNodeId: 'internet_resolved' },
+                        { text: 'Проблема не в питании', nextNodeId: 'internet_router_defect' }
+                    ]
+                },
+                {
+                    id: 'internet_router_defect',
+                    question: 'Возможен дефект роутера. Требуется замена оборудования.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Неисправность роутера',
+                        description: 'Роутер требует замены',
+                        solutions: [
+                            { step: 1, description: 'Вызов техника для замены' },
+                            { step: 2, description: 'Временное решение: используйте другой роутер' }
+                        ]
+                    }
+                },
+                {
+                    id: 'internet_slow_check',
+                    question: 'Как давно вы заметили снижение скорости?',
+                    answers: [
+                        { text: 'Внезапно сегодня', nextNodeId: 'internet_slow_sudden' },
+                        { text: 'Постепенно', nextNodeId: 'internet_slow_gradual' }
+                    ]
+                },
+                {
+                    id: 'internet_slow_sudden',
+                    question: 'Проверьте, не запущены ли обновления на других устройствах.',
+                    answers: [
+                        { text: 'Нашел проблему', nextNodeId: 'internet_resolved' },
+                        { text: 'Проблема не в этом', nextNodeId: 'internet_speedtest' }
+                    ]
+                },
+                {
+                    id: 'internet_speedtest',
+                    question: 'Проверьте скорость на speedtest.net. Соответствует тарифу?',
+                    answers: [
+                        { text: 'Да, соответствует', nextNodeId: 'internet_device_issue' },
+                        { text: 'Нет, значительно ниже', nextNodeId: 'internet_line_issue' }
+                    ]
+                },
+                {
+                    id: 'internet_device_issue',
+                    question: 'Проблема может быть в конкретном сайте или устройстве. Попробуйте другой сайт.',
+                    answers: [
+                        { text: 'На другом сайте нормально', nextNodeId: 'internet_resolved' },
+                        { text: 'Везде медленно', nextNodeId: 'internet_line_issue' }
+                    ]
+                },
+                {
+                    id: 'internet_slow_gradual',
+                    question: 'Проверьте температуру роутера. Он не перегревается?',
+                    answers: [
+                        { text: 'Роутер горячий', nextNodeId: 'internet_overheat' },
+                        { text: 'Температура нормальная', nextNodeId: 'internet_line_issue' }
+                    ]
+                },
+                {
+                    id: 'internet_overheat',
+                    question: 'Обеспечьте вентиляцию роутера. Не накрывайте его.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'internet_resolved' },
+                        { text: 'Нужен новый роутер', nextNodeId: 'internet_router_defect' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_check',
+                    question: 'Видит ли ваше устройство сеть Wi-Fi?',
+                    answers: [
+                        { text: 'Да, сеть видна', nextNodeId: 'internet_wifi_password' },
+                        { text: 'Нет, сеть не видна', nextNodeId: 'internet_wifi_enable' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_password',
+                    question: 'Введите пароль от Wi-Fi (указан на наклейке роутера).',
+                    answers: [
+                        { text: 'Подключился', nextNodeId: 'internet_resolved' },
+                        { text: 'Пароль не подходит', nextNodeId: 'internet_wifi_reset' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_reset',
+                    question: 'Проверьте пароль в личном кабинете или сбросьте роутер.',
+                    answers: [
+                        { text: 'Нашел правильный пароль', nextNodeId: 'internet_resolved' },
+                        { text: 'Сброшу роутер', nextNodeId: 'internet_factory_reset' }
+                    ]
+                },
+                {
+                    id: 'internet_factory_reset',
+                    question: 'После сброса настройте роутер заново.',
+                    answers: [
+                        { text: 'Настроил, работает', nextNodeId: 'internet_resolved' },
+                        { text: 'Нужна помощь', nextNodeId: 'internet_technician' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_enable',
+                    question: 'Проверьте, включен ли Wi-Fi на роутере. Подойдите ближе.',
+                    answers: [
+                        { text: 'Wi-Fi был выключен', nextNodeId: 'internet_wifi_turn_on' },
+                        { text: 'Далеко от роутера', nextNodeId: 'internet_wifi_range' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_turn_on',
+                    question: 'Включите Wi-Fi в настройках или кнопкой на роутере.',
+                    answers: [
+                        { text: 'Сеть появилась', nextNodeId: 'internet_resolved' },
+                        { text: 'Не получается', nextNodeId: 'internet_technician' }
+                    ]
+                },
+                {
+                    id: 'internet_wifi_range',
+                    question: 'Попробуйте подойти ближе к роутеру.',
+                    answers: [
+                        { text: 'Вблизи работает', nextNodeId: 'internet_resolved' },
+                        { text: 'Вблизи тоже нет', nextNodeId: 'internet_router_defect' }
+                    ]
+                },
+                {
+                    id: 'internet_resolved',
+                    question: 'Проблема решена! Если возникнут вопросы - обращайтесь.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема решена',
+                        description: 'Интернет работает корректно',
+                        solutions: [
+                            { step: 1, description: 'Продолжайте пользоваться услугой' },
+                            { step: 2, description: 'При проблемах обращайтесь в поддержку' }
+                        ]
+                    }
+                }
+            ],
+            tv: [
+                {
+                    id: 'tv_start',
+                    question: 'Какая проблема с телевизором?',
+                    answers: [
+                        { text: 'Нет сигнала / черный экран', nextNodeId: 'tv_no_signal' },
+                        { text: 'Пикселизация / плохое качество', nextNodeId: 'tv_quality' }
+                    ]
+                },
+                {
+                    id: 'tv_no_signal',
+                    question: 'Проверьте, включены ли телевизор и приставка.',
+                    answers: [
+                        { text: 'Оба включены', nextNodeId: 'tv_connection' },
+                        { text: 'Приставка не включается', nextNodeId: 'tv_power' }
+                    ]
+                },
+                {
+                    id: 'tv_connection',
+                    question: 'Кабель от приставки к телевизору подключен к HDMI?',
+                    answers: [
+                        { text: 'Да, к HDMI', nextNodeId: 'tv_source' },
+                        { text: 'Нет, к другому разъему', nextNodeId: 'tv_hdmi_fix' }
+                    ]
+                },
+                {
+                    id: 'tv_hdmi_fix',
+                    question: 'Переключите кабель на HDMI и выберите источник HDMI на ТВ.',
+                    answers: [
+                        { text: 'Изображение появилось', nextNodeId: 'tv_resolved' },
+                        { text: 'Нет изображения', nextNodeId: 'tv_hdmi_check' }
+                    ]
+                },
+                {
+                    id: 'tv_source',
+                    question: 'На пульте ТВ нажмите Source/Input и выберите HDMI.',
+                    answers: [
+                        { text: 'Изображение появилось', nextNodeId: 'tv_resolved' },
+                        { text: 'Нет', nextNodeId: 'tv_hdmi_check' }
+                    ]
+                },
+                {
+                    id: 'tv_hdmi_check',
+                    question: 'Попробуйте другой HDMI кабель или разъем.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'tv_resolved' },
+                        { text: 'Не помогло', nextNodeId: 'tv_box_check' }
+                    ]
+                },
+                {
+                    id: 'tv_box_check',
+                    question: 'Проверьте индикаторы на приставке. Горит ли индикатор сигнала?',
+                    answers: [
+                        { text: 'Горит', nextNodeId: 'tv_box_reset' },
+                        { text: 'Не горит', nextNodeId: 'tv_box_cable' }
+                    ]
+                },
+                {
+                    id: 'tv_box_reset',
+                    question: 'Попробуйте перезагрузить приставку.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'tv_resolved' },
+                        { text: 'Не помогло', nextNodeId: 'tv_box_defect' }
+                    ]
+                },
+                {
+                    id: 'tv_box_cable',
+                    question: 'Проверьте кабель от розетки к приставке.',
+                    answers: [
+                        { text: 'Не был подключен', nextNodeId: 'tv_cable_fix' },
+                        { text: 'Подключен', nextNodeId: 'tv_line' }
+                    ]
+                },
+                {
+                    id: 'tv_cable_fix',
+                    question: 'Подключите кабель и подождите 1-2 минуты.',
+                    answers: [
+                        { text: 'Сигнал появился', nextNodeId: 'tv_resolved' },
+                        { text: 'Нет сигнала', nextNodeId: 'tv_line' }
+                    ]
+                },
+                {
+                    id: 'tv_line',
+                    question: 'Проверьте уведомления об авариях.',
+                    answers: [
+                        { text: 'Есть авария', nextNodeId: 'tv_availability' },
+                        { text: 'Нет информации', nextNodeId: 'tv_technician' }
+                    ]
+                },
+                {
+                    id: 'tv_availability',
+                    question: 'Авария известна, технические службы работают.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Авария на линии ТВ',
+                        description: 'Проводятся технические работы',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте восстановления' },
+                            { step: 2, description: 'Следите за уведомлениями' }
+                        ]
+                    }
+                },
+                {
+                    id: 'tv_technician',
+                    question: 'Требуется выезд техника.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема с приставкой',
+                        description: 'Требуется диагностика оборудования',
+                        solutions: [
+                            { step: 1, description: 'Вызов техника' },
+                            { step: 2, description: 'Визит в течение 24-48 часов' }
+                        ]
+                    }
+                },
+                {
+                    id: 'tv_box_defect',
+                    question: 'Возможен дефект приставки. Требуется замена.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Неисправность приставки',
+                        description: 'Приставка требует замены',
+                        solutions: [
+                            { step: 1, description: 'Вызов техники для замены' }
+                        ]
+                    }
+                },
+                {
+                    id: 'tv_power',
+                    question: 'Проверьте блок питания и розетку приставки.',
+                    answers: [
+                        { text: 'Проблема с питанием решена', nextNodeId: 'tv_resolved' },
+                        { text: 'Питание в порядке', nextNodeId: 'tv_box_defect' }
+                    ]
+                },
+                {
+                    id: 'tv_quality',
+                    question: 'Проверьте качество кабеля от розетки к приставке.',
+                    answers: [
+                        { text: 'Кабель поврежден', nextNodeId: 'tv_cable_replace' },
+                        { text: 'Кабель в порядке', nextNodeId: 'tv_signal' }
+                    ]
+                },
+                {
+                    id: 'tv_cable_replace',
+                    question: 'Замените кабель на новый.',
+                    answers: [
+                        { text: 'Качество улучшилось', nextNodeId: 'tv_resolved' },
+                        { text: 'Нет', nextNodeId: 'tv_signal' }
+                    ]
+                },
+                {
+                    id: 'tv_signal',
+                    question: 'Проверьте уровень сигнала в настройках приставки.',
+                    answers: [
+                        { text: 'Низкий уровень', nextNodeId: 'tv_line' },
+                        { text: 'Нормальный уровень', nextNodeId: 'tv_box_defect' }
+                    ]
+                },
+                {
+                    id: 'tv_resolved',
+                    question: 'Проблема решена!',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема с ТВ решена',
+                        description: 'Телевидение работает корректно',
+                        solutions: [
+                            { step: 1, description: 'Продолжайте пользоваться услугой' }
+                        ]
+                    }
+                }
+            ],
+            telephony: [
+                {
+                    id: 'telephony_start',
+                    question: 'Какая проблема со стационарным телефоном?',
+                    answers: [
+                        { text: 'Нет гудка', nextNodeId: 'telephony_no_tone' },
+                        { text: 'Плохое качество звука', nextNodeId: 'telephony_audio' }
+                    ]
+                },
+                {
+                    id: 'telephony_no_tone',
+                    question: 'Телефон подключен к розетке?',
+                    answers: [
+                        { text: 'Не был подключен', nextNodeId: 'telephony_connect' },
+                        { text: 'Подключен', nextNodeId: 'telephony_test' }
+                    ]
+                },
+                {
+                    id: 'telephony_connect',
+                    question: 'Подключите телефон. Появился гудок?',
+                    answers: [
+                        { text: 'Да', nextNodeId: 'telephony_resolved' },
+                        { text: 'Нет', nextNodeId: 'telephony_test' }
+                    ]
+                },
+                {
+                    id: 'telephony_test',
+                    question: 'Попробуйте другой телефон в этой розетке.',
+                    answers: [
+                        { text: 'Другой работает', nextNodeId: 'telephony_phone_defect' },
+                        { text: 'Тоже не работает', nextNodeId: 'telephony_line' }
+                    ]
+                },
+                {
+                    id: 'telephony_phone_defect',
+                    question: 'Проблема в вашем телефоне. Проверьте или замените его.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема с телефоном',
+                        description: 'Аппарат абонента неисправен',
+                        solutions: [
+                            { step: 1, description: 'Проверьте телефон' },
+                            { step: 2, description: 'Замените телефон при необходимости' }
+                        ]
+                    }
+                },
+                {
+                    id: 'telephony_line',
+                    question: 'Проверьте уведомления об авариях.',
+                    answers: [
+                        { text: 'Есть авария', nextNodeId: 'telephony_availability' },
+                        { text: 'Нет информации', nextNodeId: 'telephony_technician' }
+                    ]
+                },
+                {
+                    id: 'telephony_availability',
+                    question: 'Авария известна, работы проводятся.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Авария на линии',
+                        description: 'Технические работы на линии телефонии',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте восстановления' }
+                        ]
+                    }
+                },
+                {
+                    id: 'telephony_technician',
+                    question: 'Требуется выезд техника.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема на линии',
+                        description: 'Требуется диагностика линии',
+                        solutions: [
+                            { step: 1, description: 'Вызов техники' }
+                        ]
+                    }
+                },
+                {
+                    id: 'telephony_audio',
+                    question: 'Попробуйте другой телефон.',
+                    answers: [
+                        { text: 'На другом нормально', nextNodeId: 'telephony_phone_defect' },
+                        { text: 'Тоже плохо', nextNodeId: 'telephony_line' }
+                    ]
+                },
+                {
+                    id: 'telephony_resolved',
+                    question: 'Проблема решена!',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема решена',
+                        description: 'Телефония работает корректно',
+                        solutions: [
+                            { step: 1, description: 'Продолжайте пользоваться услугой' }
+                        ]
+                    }
+                }
+            ],
+            mobile: [
+                {
+                    id: 'mobile_start',
+                    question: 'Какая проблема с мобильной связью?',
+                    answers: [
+                        { text: 'Нет сети / нет сигнала', nextNodeId: 'mobile_no_signal' },
+                        { text: 'Медленный интернет', nextNodeId: 'mobile_slow' }
+                    ]
+                },
+                {
+                    id: 'mobile_no_signal',
+                    question: 'Включен ли режим полета?',
+                    answers: [
+                        { text: 'Да, включен', nextNodeId: 'mobile_airplane' },
+                        { text: 'Выключен', nextNodeId: 'mobile_restart' }
+                    ]
+                },
+                {
+                    id: 'mobile_airplane',
+                    question: 'Выключите режим полета. Сеть появилась?',
+                    answers: [
+                        { text: 'Да', nextNodeId: 'mobile_resolved' },
+                        { text: 'Нет', nextNodeId: 'mobile_restart' }
+                    ]
+                },
+                {
+                    id: 'mobile_restart',
+                    question: 'Попробуйте перезагрузить телефон и проверить SIM карту.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'mobile_resolved' },
+                        { text: 'Не помогло', nextNodeId: 'mobile_location' }
+                    ]
+                },
+                {
+                    id: 'mobile_location',
+                    question: 'Попробуйте перейти в другое место.',
+                    answers: [
+                        { text: 'В другом месте сеть есть', nextNodeId: 'mobile_coverage' },
+                        { text: 'Сети нет везде', nextNodeId: 'mobile_sim' }
+                    ]
+                },
+                {
+                    id: 'mobile_coverage',
+                    question: 'Проблема с покрытием в вашем местоположении.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Слабое покрытие',
+                        description: 'Зона с плохим покрытием сети',
+                        solutions: [
+                            { step: 1, description: 'Используйте Wi-Fi звонки' },
+                            { step: 2, description: 'Переместитесь в зону с покрытием' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_sim',
+                    question: 'Попробуйте SIM карту в другом телефоне.',
+                    answers: [
+                        { text: 'В другом работает', nextNodeId: 'mobile_phone' },
+                        { text: 'Не работает', nextNodeId: 'mobile_sim_replace' }
+                    ]
+                },
+                {
+                    id: 'mobile_phone',
+                    question: 'Проблема в вашем телефоне. Обратитесь в сервис.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема с телефоном',
+                        description: 'Телефон требует диагностики',
+                        solutions: [
+                            { step: 1, description: 'Обратитесь в сервисный центр' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_sim_replace',
+                    question: 'Проблема с SIM картой. Обратитесь в офис для замены.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема с SIM картой',
+                        description: 'SIM карта требует замены',
+                        solutions: [
+                            { step: 1, description: 'Обратитесь в офис Казахтелеком' },
+                            { step: 2, description: 'Замените SIM карту' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_slow',
+                    question: 'Какой тип сети отображается (2G, 3G, 4G)?',
+                    answers: [
+                        { text: '2G или 3G', nextNodeId: 'mobile_3g' },
+                        { text: '4G', nextNodeId: 'mobile_4g' }
+                    ]
+                },
+                {
+                    id: 'mobile_3g',
+                    question: 'Включите 4G в настройках, если телефон поддерживает.',
+                    answers: [
+                        { text: 'Скорость выросла', nextNodeId: 'mobile_resolved' },
+                        { text: 'Не поддерживает', nextNodeId: 'mobile_limit' }
+                    ]
+                },
+                {
+                    id: 'mobile_limit',
+                    question: 'Ваш телефон не поддерживает 4G. Скорость ограничена.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Ограничение телефона',
+                        description: 'Телефон не поддерживает 4G',
+                        solutions: [
+                            { step: 1, description: 'Рассмотрите upgrading телефона' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_4g',
+                    question: 'Сколько полосок сигнала отображается?',
+                    answers: [
+                        { text: '1-2 полоски', nextNodeId: 'mobile_weak' },
+                        { text: '3-4 полоски', nextNodeId: 'mobile_congestion' }
+                    ]
+                },
+                {
+                    id: 'mobile_weak',
+                    question: 'Попробуйте перейти в место с лучшим покрытием.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'mobile_resolved' },
+                        { text: 'Не помогло', nextNodeId: 'mobile_congestion' }
+                    ]
+                },
+                {
+                    id: 'mobile_congestion',
+                    question: 'Проверьте уведомления об авариях.',
+                    answers: [
+                        { text: 'Есть авария', nextNodeId: 'mobile_availability' },
+                        { text: 'Нет информации', nextNodeId: 'mobile_monitor' }
+                    ]
+                },
+                {
+                    id: 'mobile_availability',
+                    question: 'Проводятся работы на базовой станции.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Работы на станции',
+                        description: 'Технические работы на базовой станции',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте завершения работ' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_monitor',
+                    question: 'Продолжайте наблюдение. Если проблема сохранится - обращайтесь.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Временная проблема',
+                        description: 'Возможна временная перегрузка',
+                        solutions: [
+                            { step: 1, description: 'Наблюдайте за ситуацией' },
+                            { step: 2, description: 'Обратитесь при ухудшении' }
+                        ]
+                    }
+                },
+                {
+                    id: 'mobile_resolved',
+                    question: 'Проблема решена!',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема решена',
+                        description: 'Мобильная связь работает',
+                        solutions: [
+                            { step: 1, description: 'Продолжайте пользоваться услугой' }
+                        ]
+                    }
+                }
+            ],
+            equipment: [
+                {
+                    id: 'equipment_start',
+                    question: 'Какое оборудование вызывает проблемы?',
+                    answers: [
+                        { text: 'Роутер не работает', nextNodeId: 'equipment_router' },
+                        { text: 'Оборудование перегревается', nextNodeId: 'equipment_heat' }
+                    ]
+                },
+                {
+                    id: 'equipment_router',
+                    question: 'Горит ли индикатор Power на роутере?',
+                    answers: [
+                        { text: 'Горит', nextNodeId: 'equipment_router_on' },
+                        { text: 'Не горит', nextNodeId: 'equipment_power' }
+                    ]
+                },
+                {
+                    id: 'equipment_power',
+                    question: 'Проверьте блок питания и розетку.',
+                    answers: [
+                        { text: 'Проблема с блоком питания', nextNodeId: 'equipment_psu' },
+                        { text: 'Проблема с розеткой', nextNodeId: 'equipment_outlet' }
+                    ]
+                },
+                {
+                    id: 'equipment_psu',
+                    question: 'Попробуйте другой блок питания.',
+                    answers: [
+                        { text: 'Включился', nextNodeId: 'equipment_resolved' },
+                        { text: 'Не включается', nextNodeId: 'equipment_defect' }
+                    ]
+                },
+                {
+                    id: 'equipment_outlet',
+                    question: 'Попробуйте другую розетку.',
+                    answers: [
+                        { text: 'Включился', nextNodeId: 'equipment_resolved' },
+                        { text: 'Нет', nextNodeId: 'equipment_psu' }
+                    ]
+                },
+                {
+                    id: 'equipment_defect',
+                    question: 'Роутер неисправен. Требуется замена.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Неисправность роутера',
+                        description: 'Роутер требует замены',
+                        solutions: [
+                            { step: 1, description: 'Вызов техники для замены' }
+                        ]
+                    }
+                },
+                {
+                    id: 'equipment_router_on',
+                    question: 'Какие индикаторы горят?',
+                    answers: [
+                        { text: 'Только Power', nextNodeId: 'equipment_only_power' },
+                        { text: 'Power и другие', nextNodeId: 'equipment_internet' }
+                    ]
+                },
+                {
+                    id: 'equipment_only_power',
+                    question: 'Попробуйте перезагрузить роутер.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'equipment_resolved' },
+                        { text: 'Не помогло', nextNodeId: 'equipment_defect' }
+                    ]
+                },
+                {
+                    id: 'equipment_internet',
+                    question: 'Горит ли индикатор интернета (INET/WAN)?',
+                    answers: [
+                        { text: 'Горит', nextNodeId: 'equipment_wifi' },
+                        { text: 'Не горит', nextNodeId: 'equipment_wan' }
+                    ]
+                },
+                {
+                    id: 'equipment_wifi',
+                    question: 'Проверьте настройки Wi-Fi в веб-интерфейсе.',
+                    answers: [
+                        { text: 'Wi-Fi выключен', nextNodeId: 'equipment_wifi_on' },
+                        { text: 'Настройки в порядке', nextNodeId: 'equipment_wifi_settings' }
+                    ]
+                },
+                {
+                    id: 'equipment_wifi_on',
+                    question: 'Включите Wi-Fi. Сеть появилась?',
+                    answers: [
+                        { text: 'Да', nextNodeId: 'equipment_resolved' },
+                        { text: 'Нет', nextNodeId: 'equipment_wifi_settings' }
+                    ]
+                },
+                {
+                    id: 'equipment_wifi_settings',
+                    question: 'Проверьте имя сети и пароль.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'equipment_resolved' },
+                        { text: 'Нужна помощь', nextNodeId: 'equipment_technician' }
+                    ]
+                },
+                {
+                    id: 'equipment_wan',
+                    question: 'Проверьте подключение кабеля к порту WAN.',
+                    answers: [
+                        { text: 'Не был подключен', nextNodeId: 'equipment_wan_fix' },
+                        { text: 'Подключен', nextNodeId: 'equipment_line' }
+                    ]
+                },
+                {
+                    id: 'equipment_wan_fix',
+                    question: 'Подключите кабель. Индикатор загорелся?',
+                    answers: [
+                        { text: 'Да', nextNodeId: 'equipment_resolved' },
+                        { text: 'Нет', nextNodeId: 'equipment_line' }
+                    ]
+                },
+                {
+                    id: 'equipment_line',
+                    question: 'Проверьте уведомления об авариях.',
+                    answers: [
+                        { text: 'Есть авария', nextNodeId: 'equipment_availability' },
+                        { text: 'Нет информации', nextNodeId: 'equipment_technician' }
+                    ]
+                },
+                {
+                    id: 'equipment_availability',
+                    question: 'Авария известна, работы проводятся.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Авария на линии',
+                        description: 'Технические работы',
+                        solutions: [
+                            { step: 1, description: 'Ожидайте восстановления' }
+                        ]
+                    }
+                },
+                {
+                    id: 'equipment_technician',
+                    question: 'Требуется помощь специалиста.',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Нужна настройка',
+                        description: 'Требуется помощь с настройкой',
+                        solutions: [
+                            { step: 1, description: 'Вызов техники' }
+                        ]
+                    }
+                },
+                {
+                    id: 'equipment_heat',
+                    question: 'Обеспечьте вентиляцию оборудования.',
+                    answers: [
+                        { text: 'Помогло', nextNodeId: 'equipment_resolved' },
+                        { text: 'Нужно новое оборудование', nextNodeId: 'equipment_defect' }
+                    ]
+                },
+                {
+                    id: 'equipment_resolved',
+                    question: 'Проблема решена!',
+                    isTerminal: true,
+                    diagnosis: {
+                        name: 'Проблема решена',
+                        description: 'Оборудование работает',
+                        solutions: [
+                            { step: 1, description: 'Продолжайте пользоваться' }
+                        ]
+                    }
+                }
+            ]
+        };
+
+        const CATEGORIES = {
+            internet: { name: 'Интернет', icon: '🌐' },
+            tv: { name: 'Телевидение', icon: '📺' },
+            telephony: { name: 'Телефония', icon: '📞' },
+            mobile: { name: 'Мобильная связь', icon: '📱' },
+            equipment: { name: 'Оборудование', icon: '🔌' }
+        };
+
+        // State
+        let messages = [];
+        let currentNode = null;
+        let currentCategory = null;
+        let isProcessing = false;
+
+        // Functions
+        function addMessage(role, content, type = null) {
+            messages.push({ role, content, type, timestamp: Date.now() });
+            renderMessages();
+        }
+
+        function renderMessages() {
+            const chatArea = document.getElementById('chatArea');
+            
+            if (messages.length === 0) {
+                chatArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">💬</div>
+                        <p>Опишите вашу проблему и я помогу её решить</p>
+                    </div>
+                `;
+                return;
+            }
+
+            chatArea.innerHTML = messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="avatar">${msg.role === 'assistant' ? '🤖' : '👤'}</div>
+                    <div class="bubble">${formatContent(msg.content)}</div>
+                </div>
+            `).join('');
+
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function formatContent(content) {
+            return content
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing';
+            typingDiv.className = 'message assistant';
+            typingDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div class="bubble">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(typingDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing');
+            if (typing) typing.remove();
+        }
+
+        function analyzeInput(input) {
+            const lowerInput = input.toLowerCase();
+            const detectedSymptoms = [];
+            
+            for (const symptom of SYMPTOMS) {
+                for (const keyword of symptom.keywords) {
+                    if (lowerInput.includes(keyword.toLowerCase())) {
+                        if (!detectedSymptoms.find(s => s.id === symptom.id)) {
+                            detectedSymptoms.push(symptom);
+                        }
+                    }
+                }
+            }
+
+            return detectedSymptoms;
+        }
+
+        function suggestCategory(symptoms) {
+            if (symptoms.length === 0) return 'internet';
+            
+            const counts = {};
+            symptoms.forEach(s => {
+                counts[s.category] = (counts[s.category] || 0) + 1;
+            });
+
+            return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+        }
+
+        function showCategorySelector(suggestedCategory) {
+            const chatArea = document.getElementById('chatArea');
+            const selectorDiv = document.createElement('div');
+            selectorDiv.id = 'categorySelector';
+            selectorDiv.innerHTML = `
+                <div class="message assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">
+                        Выберите категорию услуги:
+                        <div class="category-grid">
+                            ${Object.entries(CATEGORIES).map(([key, cat]) => `
+                                <button class="category-btn" onclick="selectCategory('${key}')">
+                                    <div class="category-icon">${cat.icon}</div>
+                                    <div class="category-name">${cat.name}</div>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(selectorDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showDiagnosticOptions(node) {
+            const chatArea = document.getElementById('chatArea');
+            const optionsDiv = document.createElement('div');
+            optionsDiv.id = 'diagnosticOptions';
+            optionsDiv.innerHTML = `
+                <div class="message assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">
+                        ${node.question}
+                        <div class="options-list">
+                            ${node.answers.map((answer, index) => `
+                                <button class="option-btn" onclick="selectAnswer(${index})">
+                                    <div class="option-number">${index + 1}</div>
+                                    <span>${answer.text}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(optionsDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showDiagnosis(diagnosis) {
+            const chatArea = document.getElementById('chatArea');
+            const diagnosisDiv = document.createElement('div');
+            diagnosisDiv.id = 'diagnosisCard';
+            diagnosisDiv.innerHTML = `
+                <div class="message assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="bubble">
+                        <div class="diagnosis-card">
+                            <div class="diagnosis-header">✅ Диагностика завершена</div>
+                            <div class="diagnosis-section">
+                                <h4>${diagnosis.name}</h4>
+                                <p>${diagnosis.description}</p>
+                            </div>
+                            <div class="diagnosis-section">
+                                <h4>🔧 Решения:</h4>
+                                ${diagnosis.solutions.map(sol => `
+                                    <div class="solution-step">
+                                        <div class="solution-icon">📝</div>
+                                        <div><strong>Шаг ${sol.step}:</strong> ${sol.description}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="new-chat-btn" onclick="resetChat()">Начать новую диагностику</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(diagnosisDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function removeInteractiveElements() {
+            const elements = ['categorySelector', 'diagnosticOptions', 'diagnosisCard'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.remove();
+            });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+
+            input.value = '';
+            isProcessing = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            addMessage('user', message);
+            removeInteractiveElements();
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+                
+                const symptoms = analyzeInput(message);
+                
+                if (symptoms.length > 0) {
+                    const category = suggestCategory(symptoms);
+                    addMessage('assistant', `Я обнаружил следующие симптомы: ${symptoms.map(s => s.description).join(', ')}. Выберите категорию для продолжения диагностики.`);
+                    showCategorySelector(category);
+                } else {
+                    addMessage('assistant', 'Пожалуйста, выберите категорию услуги для диагностики:');
+                    showCategorySelector('internet');
+                }
+
+                isProcessing = false;
+                document.getElementById('sendBtn').disabled = false;
+            }, 1000);
+        }
+
+        function selectCategory(category) {
+            removeInteractiveElements();
+            currentCategory = category;
+            
+            const tree = DIAGNOSTIC_TREES[category];
+            if (tree && tree.length > 0) {
+                currentNode = tree[0];
+                addMessage('user', CATEGORIES[category].name);
+                showDiagnosticOptions(currentNode);
+            }
+        }
+
+        function selectAnswer(answerIndex) {
+            removeInteractiveElements();
+            
+            const selectedAnswer = currentNode.answers[answerIndex];
+            addMessage('user', selectedAnswer.text);
+
+            if (selectedAnswer.nextNodeId) {
+                const tree = DIAGNOSTIC_TREES[currentCategory];
+                currentNode = tree.find(node => node.id === selectedAnswer.nextNodeId);
+
+                if (currentNode) {
+                    if (currentNode.isTerminal) {
+                        if (currentNode.diagnosis) {
+                            showDiagnosis(currentNode.diagnosis);
+                        }
+                    } else {
+                        showDiagnosticOptions(currentNode);
+                    }
+                }
+            }
+        }
+
+        function resetChat() {
+            messages = [];
+            currentNode = null;
+            currentCategory = null;
+            removeInteractiveElements();
+            renderMessages();
+            document.getElementById('userInput').value = '';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Initialize
+        renderMessages();
+    </script>
+</body>
+</html>
